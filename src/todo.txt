@@ -1,0 +1,3 @@
+[ ] New appointment feature
+[ ] Fix hour by hour view
+[ ] Add a view appointment section
