@@ -1,7 +1,7 @@
 <script>
 
-import { appState, getRandomItem, settings } from "../global.svelte";
-import { Search, User, ListTodo, Clock, Calendar1, HeartCrack } from "@lucide/svelte";
+import { appState, getRandomItem, settings, viewAppt } from "../global.svelte";
+import { Search, User, ListTodo, Clock, Calendar1, HeartCrack, PencilLine, Trash } from "@lucide/svelte";
 
 const days = [
     "Sunday",
@@ -51,13 +51,15 @@ const isValidSearch = (m) => {
     let type = m.type.toLowerCase();
     let day = days[m.day].toLowerCase();
     let month = months[m.month].toLowerCase();
+    let notes = m.notes;
     for(let s of searchTerm.split(" ").filter(Boolean)){
         let l = s.toLowerCase();
         if(!(
             client.includes(l) ||
             type.includes(l) || 
             day.includes(l) || 
-            month.includes(l)
+            month.includes(l) || 
+            notes.includes(l)
         )){
             return false;
         }
@@ -135,9 +137,9 @@ const getTimeAndDuration = (a) => {
                     <input type='text' bind:value={searchTerm} placeholder="Search for appointment...">
                 </div>
                 {#if searchAppts.length > 0}
-                    {#each searchAppts as a}
+                    {#each searchAppts as a, i}
 
-                        <div class="appointment">
+                        <label class="appointment" for="view{i}">
                             <div class="appointmentHeader">
                                 <h1>
                                     <User size={24} />
@@ -164,15 +166,26 @@ const getTimeAndDuration = (a) => {
                                     <Calendar1 size={18} />
                                     <p>{buildDate(a)}</p>
                                 </div>
+                                {#if a.notes.length >= 1}
+                                    <div class="item">
+                                        <p style='font-size: 16px;'>{a.notes}</p>
+                                    </div>
+                                {/if}
                             </div>
-                        </div>
+
+                        </label>
+
+                        <button onclick={() => viewAppt(a)} class='invis' id="view{i}">View {i}</button>
 
                     {/each}
                 {:else}
                     <h1>No appointment matches your search</h1>
                 {/if}
             {/if}
+
+
         </div>
+
 
 </div>
 
@@ -205,9 +218,11 @@ const getTimeAndDuration = (a) => {
         flex-direction: column;
         gap: 10px;
         width: 100%;
-        padding-top: 10px;
-        border-top: 1px solid var(--text-color);
         color: var(--text-color);
+        padding-left: 10px;
+        padding-right: 10px;
+        box-sizing: border-box;
+        padding-bottom: 10px;
     }
 
     .item {
@@ -228,6 +243,18 @@ const getTimeAndDuration = (a) => {
         justify-content: space-between;
         display: flex;
         color: var(--header-color);
+        box-sizing: border-box;
+        background-color: var(--lighter-bg-color);
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .appointmentHeader h1 {
+        align-items: center;
+        display: flex;
+        gap: 10px;
     }
 
     .appointment {
@@ -237,8 +264,9 @@ const getTimeAndDuration = (a) => {
         border-radius: 15px;
         display: flex;
         box-sizing: border-box;
-        padding: 10px;
         flex-direction: column;
+        gap: 10px;
+        cursor: pointer;
     }
 
     .upcoming {

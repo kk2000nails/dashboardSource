@@ -1,3 +1,5 @@
+import { replace } from "svelte-spa-router";
+
 export let appState = $state({
     sidebarToggle: false,
     appointments: [],
@@ -18,23 +20,53 @@ export let newData = $state(
     }
 )
 
+export let appointmentView = $state({
+    clientName: "",
+    type: "",
+    startHours: 12,
+    startMinutes: 0,
+    endHours: 12,
+    endMinutes: 45,
+    date: now.getDate(),
+    month: now.getMonth(),
+    year: now.getFullYear(),
+    notes: "",
+    id: "",
+})
+
+export let viewAppt = (a) => {
+    appointmentView.clientName = a.clientName;
+    appointmentView.type = a.type;
+    appointmentView.startHours = Math.floor(a.time / 60);
+    appointmentView.startMinutes = a.time % 60;
+    appointmentView.endHours = Math.floor((a.time + a.duration) / 60);
+    appointmentView.endMinutes = (a.time + a.duration) % 60;
+    appointmentView.date = a.date;
+    appointmentView.month = a.month;
+    appointmentView.year = a.year;
+    appointmentView.notes = a.notes;
+    appointmentView.id = a.id;
+    replace('/apptView');
+}
+
 
 export let color = $state(
     {
-    name: 'Default',
-    headerColor: "#f8f8f8",
-    textColor: "#c9c9c9",
-    mainColor: "#018d6c",
-    lightMainColor: "#00ad85ff",
-    dimMainColor: "#006e55ff",
-    grayColor: "#2f2f2f",
-    inputColor: "#161616d0",
-    bgColor: "#0f0f0f",
-    lightBgColor: "#181818",
-    lighterBgColor: "#232323",
-    lightestBgColor: "#2e2e2e",
-    fail: "#a52100"
-}
+        name: 'Default',
+        headerColor: "#f8f8f8",
+        textColor: "#c9c9c9",
+        mainColor: "#018d6c",
+        lightMainColor: "#00ad85ff",
+        dimMainColor: "#006e55ff",
+        grayColor: "#2f2f2f",
+        inputColor: "#161616d0",
+        bgColor: "#0f0f0f",
+        lightBgColor: "#181818",
+        lighterBgColor: "#232323",
+        lightestBgColor: "#2e2e2e",
+        fail: "#a52100",
+        index: 0
+    }
 );
 
 export const themes = [{
@@ -206,12 +238,67 @@ export const themes = [{
     fail: "#d81e1eff"
 }]
 
+const encoder = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+\`~,./<>?;\':\"[]{}\\|";
+
+export const getID = () => {
+    let id = "";
+    for(let i = 0; i < 10; i++){
+        id += encoder[random(0, encoder.length)];
+    }
+
+    return id;
+}
 
 export let settings = $state({
-    clock24hr: true,
-    darkTheme: true,
+    clock24hr: false,
     animations: true,
+    
 })
+
+export const saveGlobal = () => {
+    const data = {
+        clock24hr: settings.clock24hr,
+        animations: settings.animations,
+        colorIndex: color.index
+    }
+    localStorage.setItem("settings", JSON.stringify(data));
+}
+
+export const loadSettings = async () => {
+    const data = JSON.parse(await localStorage.getItem("settings"));
+    if(data == null){
+        console.log("No Settings :(");
+        return;
+    }
+    settings.clock24hr = data.clock24hr;
+    settings.animations = data.animations;
+    color.index = data.colorIndex;
+    loadTheme(themes[data.colorIndex], color.index);
+}
+
+
+export const loadTheme = (theme, index) => { 
+    color.name = theme.name;
+    color.headerColor = theme.headerColor;
+    color.textColor = theme.textColor;
+    color.mainColor = theme.mainColor;
+    color.lightMainColor = theme.lightMainColor;
+    color.dimMainColor = theme.dimMainColor;
+    color.grayColor = theme.grayColor;
+    color.inputColor = theme.inputColor;
+    color.bgColor = theme.bgColor;
+    color.lightBgColor = theme.lightBgColor;
+    color.lighterBgColor = theme.lighterBgColor;
+    color.lightestBgColor = theme.lightestBgColor,
+    color.fail = theme.fail;
+
+
+    color.index = index;
+
+    saveGlobal();
+};
+
+
 
 export const getRandomItem = (list) => {
   const index = Math.floor(Math.random() * list.length);
@@ -270,4 +357,19 @@ export const getTimeUntil = (a) => {
         }
     }
     return `For ${Math.floor(minutesUntil + a.duration)} More Minutes`
+}
+
+export let notifications = $state([]);
+
+export const removeNotification = (thing) => {
+    const index = notifications.indexOf(thing);
+    notifications.splice(index, 1);
+}
+
+export const addNotification = (type, content, time, icon) => {
+    let thing = {type: type, content: content, icon: icon, id: getID()};
+    notifications.push(thing);
+    setTimeout(() => {
+        removeNotification(thing);
+    }, time);
 }

@@ -1,7 +1,7 @@
 <script>
     import { onMount, tick } from "svelte";
-    import { appState } from "../global.svelte";
-    import { push } from 'svelte-spa-router';
+    import { appState, newData } from "../global.svelte";
+    import { push, replace } from 'svelte-spa-router';
 
     let now = new Date();
     let year = $state(now.getFullYear());
@@ -124,10 +124,16 @@
 
     const focus = (a, m, d) => {
         if(a.appt.length == 0){
+            // if there is not an appointment, go to the new one
+            newData.month = m;
+            console.log(a);
+            newData.date = a.date;
+            replace('/new');
             return;
         }
+
         appState.focusAppt = a;
-        appState.focusAppt.month = m;
+        appState.focusAppt.month = months[m];
         appState.focusAppt.day = d;
         push('/calendar/focus');
     }
@@ -168,7 +174,7 @@
 
 
                                 
-                                    <button id='p{p}a{i}l{apptIndex}' class='invis' onclick={() => focus(a, months[(month + p) % 12], apptIndex)}>p{p}a{i}</button>
+                                    <button id='p{p}a{i}l{apptIndex}' class='invis' onclick={() => focus(a, (month + p) % 12, apptIndex)}>p{p}a{i}</button>
 
 
 

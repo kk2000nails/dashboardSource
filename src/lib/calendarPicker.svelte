@@ -1,9 +1,12 @@
 <script>
 
   import { ChevronLeft, ChevronRight } from "@lucide/svelte";
-  import { newData, settings } from "../global.svelte";
+  import { settings } from "../global.svelte";
   import { fly, slide } from "svelte/transition";
 
+  export let month;
+  export let year;
+  export let date;
 
   const monthLength = (month, year) => {
     return new Date(year, month + 1, 0).getDate();
@@ -42,8 +45,8 @@
   }
 
   let scrollMonth = (dir) => {
-    newData.date = 1;
-    newData.month = (12 + newData.month + dir) % 12;
+    date = 1;
+    month = (12 + month + dir) % 12;
   }
 
   const months = [
@@ -75,30 +78,30 @@
           <ChevronLeft size={22} />
         </label>
         <button id='leftMonth' onclick={() => scrollMonth(-1)} class='invis'>Go Left</button>
-        <p>{months[newData.month]}</p>
+        <p>{months[month]}</p>
         <label class='arrowPicker' for='rightMonth'>
           <ChevronRight size={22} />
         </label>
         <button id='rightMonth' onclick={() => scrollMonth(1)} class='invis'>Go Right</button>
       </div>
       <div class="yearSelector">
-        <input type='text' bind:value={newData.year}>
+        <input type='text' bind:value={year}>
       </div>
     </div>
 
     <div class="calendar">
-      {#if newData.month != null && newData.year != null}
-        {@const data = calendarData(newData.month, newData.year)}
+      {#if month != null && year != null}
+        {@const data = calendarData(month, year)}
 
         {#each {length: data.rows} as _, r}
           <div class="calRow">
             {#each {length: 7} as _, index}
               {@const thing = data.data[(r * 7) + index]}
-              <label class="date {thing != -1 ? "selectable" : ""}" style="{newData.date == thing ? "background-color: var(--main-color);" : ""}" for='select{thing}'>
+              <label class="date {thing != -1 ? "selectable" : ""}" style="{date == thing ? "background-color: var(--main-color);" : ""}" for='select{thing}'>
                 <p style="{thing == -1 ? "opacity: 0.5;" : ""}">{thing == -1 ? '-' : thing}</p>
               </label>
               {#if thing != -1}
-                <button id="select{thing}" onclick={() => {newData.date = thing}} class='invis'>Select</button>
+                <button id="select{thing}" onclick={() => {date = thing}} class='invis'>Select</button>
               {/if}
             {/each}
           </div>

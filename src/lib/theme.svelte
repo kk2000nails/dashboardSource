@@ -1,44 +1,8 @@
 <script>
-    import { settings, color, themes } from "../global.svelte";
+    import { settings, color, themes, loadTheme, saveGlobal } from "../global.svelte";
     import { Sun, Moon } from '@lucide/svelte'
 
-    const loadTheme = (theme) => { 
-        color.name = theme.name;
-        color.headerColor = theme.headerColor;
-        color.textColor = theme.textColor;
-        color.mainColor = theme.mainColor;
-        color.lightMainColor = theme.lightMainColor;
-        color.dimMainColor = theme.dimMainColor;
-        color.grayColor = theme.grayColor;
-        color.inputColor = theme.inputColor;
-        color.bgColor = theme.bgColor;
-        color.lightBgColor = theme.lightBgColor;
-        color.lighterBgColor = theme.lighterBgColor;
-        color.lightestBgColor = theme.lightestBgColor,
-        color.fail = theme.fail;
-    };
 
-
-    $effect(() => {
-        const colorVars = {
-            '--header-color': color.headerColor,
-            '--text-color': color.textColor,
-            '--main-color': color.mainColor,
-            '--light-main-color': color.lightMainColor,
-            '--dim-main-color': color.dimMainColor,
-            '--gray-color': color.grayColor,
-            '--input-color': color.inputColor,
-            '--bg-color': color.bgColor,
-            '--light-bg-color': color.lightBgColor,
-            '--lighter-bg-color': color.lighterBgColor,
-            '--lightest-bg-color': color.lightestBgColor,
-            '--fail-color': color.fail,
-        };
-
-        for (const [varName, value] of Object.entries(colorVars)) {
-            document.documentElement.style.setProperty(varName, `${value}`);
-        }
-    })
 
 
 </script>
@@ -72,7 +36,7 @@
             <button
                 class="invis"
                 id="chooseTheme{i}"
-                onclick={() => loadTheme(theme)}
+                onclick={() => loadTheme(theme, i)}
             >Load Theme</button>
 
         </label>

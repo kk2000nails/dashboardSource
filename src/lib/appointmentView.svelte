@@ -1,20 +1,15 @@
 <script>
-    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack} from "@lucide/svelte";
-    import { addNotification, newData, settings } from "../global.svelte";
-    let focused = $state(-1);
+    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Trash} from "@lucide/svelte";
+    import { addNotification, appointmentView, settings } from "../global.svelte";
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
     import TimePicker from "./timePicker.svelte";
     import { pb } from "../api.svelte";
 
-    const debug = true;
-
-    let sMinutes = $state(0);
-    let sHour = $state(12);
-    let endMinutes = $state(45);
-    let endHours = $state(12);
     const id1 = "pihudfgs";
     const id2 = "poihadfgiunsdf";
+
+    let checking =$state(false);
 
     const getDateSuffix = (date) => {
         if(date % 10 == 1 && date != 11){
@@ -42,17 +37,6 @@
         "December"
     ];
 
-    const focusElement = (id) => {
-        document.getElementById(id).focus();
-    }
-
-    const focus = (index) => {
-        if(focused == index){
-            focused = -1;
-        } else {
-            focused = index;
-        }
-    }
 
     const buildTime = (hours, minutes) => {
         if(settings.clock24hr){
@@ -76,39 +60,56 @@
     }
 
     const getDuration = () => {
-        let end = endHours * 60 + endMinutes;
-        let start = sHour * 60 + sMinutes;
+        let end = appointmentView.endHours * 60 + appointmentView.endMinutes;
+        let start = appointmentView.startHours * 60 + appointmentView.startMinutes;
         return end - start;
     }
 
 
-    const addAppointment = async () => {
+    const saveAppointment = async () => {
         let duration = getDuration();
         if(duration < 0){
             addNotification('fail', 'You cannot set an appointment to end before it starts', 5000, HeartCrack)
             return;
         }
 
-        let dateString = `${newData.year}-${(newData.month + 1) < 10 ? `0${(newData.month + 1)}` : (newData.month + 1)}-${newData.date < 10 ? `0${newData.date}` : newData.date} ${sHour < 10 ? `0${sHour}` : sHour}:${sMinutes < 10 ? `0${sMinutes}` : sMinutes}:00.123Z`;
+        let dateString = `${appointmentView.year}-${(appointmentView.month + 1) < 10 ? `0${(appointmentView.month + 1)}` : (appointmentView.month + 1)}-${appointmentView.date < 10 ? `0${appointmentView.date}` : appointmentView.date} ${appointmentView.startHours < 10 ? `0${appointmentView.startHours}` : appointmentView.startHours}:${appointmentView.startMinutes < 10 ? `0${appointmentView.startMinutes}` : appointmentView.startMinutes}:00.123Z`;
         console.log(dateString);
         let data = {
             "startTime": dateString,
             "duration": duration,
-            "type": newData.type,
-            "clientName": newData.clientName,
-            "notes": newData.notes
+            "type": appointmentView.type,
+            "clientName": appointmentView.clientName,
+            "notes": appointmentView.notes
         }
 
         try {
-            const record = await pb.collection('appointments').create(data);
+            const record = await pb.collection('appointments').update(appointmentView.id, data);
             const now = new Date();
-            newData.clientName = "";
-            newData.date = now.getDate();
-            newData.month = now.getMonth();
-            newData.notes = "";
-            newData.type = "";
-            newData.year = now.getFullYear();
-            addNotification('success', 'Appointment created!', 5000, Check);
+            appointmentView.clientName = "";
+            appointmentView.date = now.getDate();
+            appointmentView.month = now.getMonth();
+            appointmentView.notes = "";
+            appointmentView.type = "";
+            appointmentView.year = now.getFullYear();
+            addNotification('success', 'Appointment Updated!', 5000, Check);
+            replace('/')
+        } catch {
+            addNotification('fail', 'Something went wrong... Try again later', 5000, HeartCrack);
+        }
+    }
+
+    const deleteAppointment = async () => {
+        try {
+            const record = await pb.collection('appointments').delete(appointmentView.id);
+            const now = new Date();
+            appointmentView.clientName = "";
+            appointmentView.date = now.getDate();
+            appointmentView.month = now.getMonth();
+            appointmentView.notes = "";
+            appointmentView.type = "";
+            appointmentView.year = now.getFullYear();
+            addNotification('success', 'Appointment Deleted!', 5000, Check);
             replace('/')
         } catch {
             addNotification('fail', 'Something went wrong... Try again later', 5000, HeartCrack);
@@ -119,8 +120,10 @@
 
 <div class="main">
 
+
+
     <div class="headerRow">
-        <h1>New Appointment</h1>
+        <h1>{appointmentView.clientName}</h1>
     </div>
 
 
@@ -130,12 +133,12 @@
 
                 <div class="inputRow">
                     <User size={20} />
-                    <input placeholder='Client Name...' bind:value={newData.clientName} onkeydown={(e) => e.key === "Enter" && focusElement('type')}>
+                    <input placeholder='Client Name...' bind:value={appointmentView.clientName}>
                 </div>
                 <div class="spacer"></div>
                 <div class="inputRow">
                     <ListTodo size={20}/>
-                    <input id='type' placeholder='Appointment Type...' bind:value={newData.type} onkeydown={(e) => e.key === "Enter" && focus(1)}>
+                    <input id='type' placeholder='Appointment Type...' bind:value={appointmentView.type}>
                 </div>
 
             </div>
@@ -146,14 +149,11 @@
                     <Calendar size={20} />
                     <p class='idkText'>Date</p>
                     <label for='focus1' class='focusLabel'>
-                        <p>{months[newData.month]} {newData.date}{getDateSuffix(newData.date)}. {newData.year}</p>
+                        <p>{months[appointmentView.month]} {appointmentView.date}{getDateSuffix(appointmentView.date)}. {appointmentView.year}</p>
                     </label>
-                    <button class='invis' id='focus1' onclick={() => focus(1)}>Focus Calendar</button>
                 </div>
 
-                {#if focused == 1}
-                    <CalendarPicker bind:year={newData.year} bind:month={newData.month} bind:date={newData.date}/>
-                {/if}
+                <CalendarPicker bind:year={appointmentView.year} bind:month={appointmentView.month} bind:date={appointmentView.date} />
                 
                 <div class="spacer"></div>
 
@@ -162,14 +162,11 @@
                     <Clock1 size={20} />
                     <p class='idkText'>Start Time</p>
                     <label for='focus2' class='focusLabel'>
-                        <p>{buildTime(sHour, sMinutes)}</p>
+                        <p>{buildTime(appointmentView.startHours, appointmentView.startMinutes)}</p>
                     </label>
-                    <button class='invis' id='focus2' onclick={() => focus(2)}>Focus Start Time</button>
                 </div>
 
-                {#if focused == 2}
-                    <TimePicker bind:minutes={sMinutes} bind:hours={sHour} id={id1}/>
-                {/if}
+                <TimePicker bind:minutes={appointmentView.startMinutes} bind:hours={appointmentView.startHours} id={id1}/>
 
                 <div class="spacer"></div>
 
@@ -177,46 +174,62 @@
                     <Clock10 size={20} />
                     <p class='idkText'>End Time</p>
                     <label for='focus3' class='focusLabel'>
-                        <p>{buildTime(endHours, endMinutes)}</p>
+                        <p>{buildTime(appointmentView.endHours, appointmentView.endMinutes)}</p>
                     </label>
-                    <button class='invis' id='focus3' onclick={() => focus(3)}>Focus End Time</button>
                 </div>
 
-
-                {#if focused == 3}
-                    <TimePicker bind:minutes={endMinutes} bind:hours={endHours} id={id2}/>
-                {/if}
+                <TimePicker bind:minutes={appointmentView.endMinutes} bind:hours={appointmentView.endHours} id={id2}/>
 
 
             </div>
 
             <div class="inputGroup">
-                <textarea bind:value={newData.notes} placeholder='Additional Notes...'></textarea>
+                <textarea bind:value={appointmentView.notes} placeholder='Additional Notes...'></textarea>
+            </div>
+
+            <div class="buttonRow">
+                {#if !checking}
+                    <button class='nextButton' id="check" onclick={() => {checking = true; setTimeout(() => {checking = false;}, 5000)}}><Trash size={20} /> Delete</button>
+
+                {:else}
+                    <button class='nextButton' id="check" onclick={deleteAppointment}><Trash size={20} /> You sure?</button>
+
+                {/if}
+
+                <button class='nextButton' onclick={saveAppointment}><PlusCircle size={20} /> Save</button>
             </div>
 
 
-            <button class='nextButton' onclick={addAppointment}><PlusCircle size={20} /> Add Appointment</button>
         </div>
 
 </div>
 
 <style>
 
-    .nextButton {
-        width: fit-content;
-        background-color: var(--lighter-bg-color);
-        border: none;
-        font-size: 20px;
-        color: var(--header-color);
-        box-sizing: border-box;
-        padding: 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        display: flex;
-        gap: 10px;
-    }
+.buttonRow {
+    width: 100%;
+    display: flex;
+    padding-bottom: 20px;
+    gap: 20px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.nextButton {
+    width: fit-content;
+    background-color: var(--lighter-bg-color);
+    border: none;
+    font-size: 20px;
+    color: var(--header-color);
+    box-sizing: border-box;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    gap: 10px;
+}
 
 .idkText {
     margin: 0px; 

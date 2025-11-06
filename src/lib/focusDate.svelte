@@ -1,7 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import { Clock, HeartCrack} from "@lucide/svelte";
-    import { appState, getRandomItem, settings } from "../global.svelte";
+    import { appState, getRandomItem, settings, viewAppt } from "../global.svelte";
 
 const collisionManager = (array) => {
     // if an item is within the threshold minutes of an item before, group it into a row
@@ -151,7 +151,7 @@ const getTime = (time) => {
                         {@const start = (appt.time / 1440) * 100}
                         {@const duration = (appt.duration / 1440) * 100}
                         {@const width = (100 / row.data.length)}
-                        <div class="appt" style="z-index: {rowIndex}; top: {start}%; left: calc({width * apptIndex}% + {row.offset * 12}px - {((row.offset * 12) / row.data.length) * apptIndex}px + 10px); height: {duration}%; width: calc({width}%  - {(row.offset * 12) / row.data.length}px - 10px);">
+                        <label for='r{rowIndex}a{apptIndex}' class="appt" style="z-index: {rowIndex}; top: {start}%; left: calc({width * apptIndex}% + {row.offset * 12}px - {((row.offset * 12) / row.data.length) * apptIndex}px + 10px); height: {duration}%; width: calc({width}%  - {(row.offset * 12) / row.data.length}px - 10px);">
                             <p class='apptHeader'>{appt.clientName}</p>
 
                             {#if appt.duration >= 45}
@@ -165,7 +165,8 @@ const getTime = (time) => {
                                 </div>
                             {/if}
     
-                        </div>
+                        </label>
+                        <button id='r{rowIndex}a{apptIndex}' onclick={() => viewAppt(appt)} class='invis'>View appointment</button>
                     {/each}
                 {/each}
 

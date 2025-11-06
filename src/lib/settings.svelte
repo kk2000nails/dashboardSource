@@ -1,5 +1,5 @@
 <script>
-    import { settings } from "../global.svelte";
+    import { saveGlobal, settings } from "../global.svelte";
 
 </script>
 
@@ -21,7 +21,7 @@
             <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.clock24hr ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
         </label>
 
-        <button onclick={() => {settings.clock24hr = !settings.clock24hr}} id='toggleClock' class='invis'>Toggle 24HR Time</button>
+        <button onclick={() => {settings.clock24hr = !settings.clock24hr; saveGlobal()}} id='toggleClock' class='invis'>Toggle 24HR Time</button>
     </div>
 
     <div class="row">
@@ -34,7 +34,7 @@
             <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.animations ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
         </label>
 
-        <button onclick={() => {settings.animations = !settings.animations }} id='toggleAnim' class='invis'>Toggle Animations</button>
+        <button onclick={() => {settings.animations = !settings.animations; saveGlobal()}} id='toggleAnim' class='invis'>Toggle Animations</button>
     </div>
 
 

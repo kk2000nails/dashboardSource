@@ -36,6 +36,9 @@
   position: fixed;
 }
 
+input, textarea {
+  touch-action: manipulation;
+}
 
 .headerRow {
   width: 100%;

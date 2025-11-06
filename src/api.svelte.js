@@ -1,16 +1,14 @@
 import Pocket from 'pocketbase';
 import { appState } from './global.svelte';
+
+// hosting pb on my personal server right now, but we'll have to switch it later
 export const pb = new Pocket('https://georgeeggers.xyz');
+
 /*
-        clientName: ,
-        type: ,
-        time: ,
-        day: ,
-        date: ,
-        month: ,
-        year: ,
-        duration: 
-        timeUntil: ""
+
+This contains code for some of the interfacing with the backend API
+There are some file-specific functions in appointmentView.svelte and newAppointment.svelte, so make sure to replace those if changing the backend
+
 */
 
 const getDay = (month, day, year) => {
@@ -25,6 +23,7 @@ export const convertPocketToJson = (i) => {
     let [hours, minutes, seconds] = recordTime.split(":");
     let time = (parseInt(hours) * 60) + parseInt(minutes);
 
+    // program just needs to return JSON in this format. Pocketbase is, theoretically, replacable
     return {
         clientName: i.clientName,
         type: i.type,
@@ -36,6 +35,7 @@ export const convertPocketToJson = (i) => {
         duration: i.duration,
         timeUntil: "",
         notes: i.notes,
+        id: i.id
     }
 }
 
