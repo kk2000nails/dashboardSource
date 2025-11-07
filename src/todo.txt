@@ -1,14 +1,27 @@
+
+
+! TODO
+
 [X] Add an appointment view with the option to delete and edit appointments
 [X] Save settings and color on change
-[ ] Add the ability to silence notifications
-[ ] Fix sidebar with logo
-[ ] Add a way to quickly delete all appointments marked as "DONE"
-[ ] Auto scroll to appointments in focusDate.svelte
+[X] Add the ability to silence notifications
+[X] Finally figure out what to put at the top of the sidebar
+[X] Add a way to quickly delete all appointments marked as "DONE"
+[X] Auto scroll to appointments in focusDate.svelte
+
+
+
+! MAYBE
+
+[ ] Mess around with box shadows & gradients to try and make the UI less flat
+
+
 
 ! BUGS
 
-[ ] Highkey dont know why it happens but sometimes the timeUntil field depopulates
+[X] Highkey dont know why it happens but sometimes the timeUntil field depopulates
 
 !!! BEFORE RELEASE !!!
 
 Make sure to set up the server off of georgeeggers.xyz, and switch it to the domain we actually choose
+

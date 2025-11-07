@@ -124,12 +124,35 @@ const getTime = (time) => {
     return output;
 }
 
+const to_bottom = () => {
+    let thing = document.getElementById('')
+    thing.scrollTop = thing.scrollHeight;
+}
+
+onMount(() => {
+    let first = 10000;
+    for(let i of appointments){
+        let time = (i.time / 1440) * 100;
+        if(time < first){
+            first = time;
+        }
+    }
+
+
+    first += 10;
+    if(first > 0){
+        let thing = document.getElementById('main')
+        thing.scrollTop = (first / 100) * (thing.scrollHeight - thing.clientHeight)
+    }
+
+})
+
    
 
 </script>
 
 
-<div class="main">
+<div class="main" id='main'>
     {#if appState.focusAppt}
 
         <div class="headerRow">

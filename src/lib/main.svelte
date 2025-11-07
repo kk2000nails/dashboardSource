@@ -1,4 +1,6 @@
 <script>
+    import { deleteDone } from "../api.svelte";
+
 
 import { appState, getRandomItem, settings, viewAppt } from "../global.svelte";
 import { Search, User, ListTodo, Clock, Calendar1, HeartCrack, PencilLine, Trash } from "@lucide/svelte";
@@ -110,6 +112,16 @@ const getTimeAndDuration = (a) => {
     return output;
 }
     
+const isDoneAppointment = () => {
+    for(let i of appState.appointments){
+        if(i.timeUntil == "Done"){
+            return true;
+        }
+    }
+    return false;
+}
+
+let isDone = $derived(isDoneAppointment());
 
 </script>
 
@@ -136,6 +148,13 @@ const getTimeAndDuration = (a) => {
                     <Search size={20} />
                     <input type='text' bind:value={searchTerm} placeholder="Search for appointment...">
                 </div>
+                {#if isDone}
+                    <label for='deleteDone' class='deleteButton'>
+                        <Trash size={20} />
+                        <p>Delete Completed Appointments</p>
+                    </label>
+                    <button onclick={deleteDone} class='invis' id='deleteDone'>Delete Done</button>
+                {/if}
                 {#if searchAppts.length > 0}
                     {#each searchAppts as a, i}
 
@@ -194,6 +213,26 @@ const getTimeAndDuration = (a) => {
 
 <style>
 
+    .deleteButton {                
+        width: fit-content;
+        background-color: var(--lighter-bg-color);
+        border: none;
+        font-size: 20px;
+        color: var(--header-color);
+        box-sizing: border-box;
+        padding: 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        gap: 10px;
+    }
+
+    .deleteButton p {
+        margin: 0px;
+    }
+
     .search {
         width: 100%;
         display: flex;
@@ -245,8 +284,8 @@ const getTimeAndDuration = (a) => {
         color: var(--header-color);
         box-sizing: border-box;
         background-color: var(--lighter-bg-color);
-        border-top-left-radius: 15px;
-        border-top-right-radius: 15px;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
         align-items: center;
         padding: 10px;
     }
@@ -261,7 +300,7 @@ const getTimeAndDuration = (a) => {
         width: 100%;
         height: fit-content;
         background-color: var(--light-bg-color);
-        border-radius: 15px;
+        border-radius: 10px;
         display: flex;
         box-sizing: border-box;
         flex-direction: column;

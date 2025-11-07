@@ -11,7 +11,7 @@
 
     <div class="optionGroup">
         <div class="header">
-            <p>Logo Here</p>
+            <p>KK 2000 Nails</p>
         </div>
         <label for='home' class="option {($location) == "/" ? 'highlighted' : ""}">
             <House size={24} />

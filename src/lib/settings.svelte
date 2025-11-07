@@ -9,36 +9,48 @@
     <h1>Settings</h1>
 </div>
 
-<div class="settingsMenu">
+    <div class="settingsMenu">
 
-    <div class="row">
-        <div class="text">
-            <p class='header'>24 Hour Times</p>
-            <p class='content'>Toggle the times to display in military time or standard time.</p>
+        <div class="row">
+            <div class="text">
+                <p class='header'>24 Hour Times</p>
+                <p class='content'>Toggle the times to display in military time or standard time</p>
+            </div>
+
+            <label for='toggleClock' class="toggle {settings.animations ? "anims" : ""}" style='{settings.clock24hr ? "background-color: var(--main-color);" : "background-color: var(--lighter-bg-color);"}'>
+                <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.clock24hr ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
+            </label>
+
+            <button onclick={() => {settings.clock24hr = !settings.clock24hr; saveGlobal()}} id='toggleClock' class='invis'>Toggle 24HR Time</button>
         </div>
 
-        <label for='toggleClock' class="toggle {settings.animations ? "anims" : ""}" style='{settings.clock24hr ? "background-color: var(--main-color);" : "background-color: var(--lighter-bg-color);"}'>
-            <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.clock24hr ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
-        </label>
+        <div class="row">
+            <div class="text">
+                <p class='header'>Animations</p>
+                <p class='content'>Controls animations across the app</p>
+            </div>
 
-        <button onclick={() => {settings.clock24hr = !settings.clock24hr; saveGlobal()}} id='toggleClock' class='invis'>Toggle 24HR Time</button>
-    </div>
+            <label for='toggleAnim' class="toggle {settings.animations ? "anims" : ""}" style='{settings.animations ? "background-color: var(--main-color);" : "background-color: var(--lighter-bg-color);"}'>
+                <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.animations ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
+            </label>
 
-    <div class="row">
-        <div class="text">
-            <p class='header'>Animations</p>
-            <p class='content'>Removes animations across the app.</p>
+            <button onclick={() => {settings.animations = !settings.animations; saveGlobal()}} id='toggleAnim' class='invis'>Toggle Animations</button>
+        </div>
+        
+        <div class="row">
+            <div class="text">
+                <p class='header'>Notifications</p>
+            <p class='content'>Controls all popup and push notifications</p>
+            </div>
+
+            <label for='toggleNotif' class="toggle {settings.animations ? "anims" : ""}" style='{settings.notifications ? "background-color: var(--main-color);" : "background-color: var(--lighter-bg-color);"}'>
+                <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.notifications ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
+            </label>
+
+            <button onclick={() => {settings.notifications = !settings.notifications; saveGlobal()}} id='toggleNotif' class='invis'>Toggle Notifications</button>
         </div>
 
-        <label for='toggleAnim' class="toggle {settings.animations ? "anims" : ""}" style='{settings.animations ? "background-color: var(--main-color);" : "background-color: var(--lighter-bg-color);"}'>
-            <div class="toggleBody {settings.animations ? "anims" : ""}" style='{settings.animations ? "left: calc(100% - 25px);" : "left: 5px;"}'></div>
-        </label>
-
-        <button onclick={() => {settings.animations = !settings.animations; saveGlobal()}} id='toggleAnim' class='invis'>Toggle Animations</button>
     </div>
-
-
-</div>
 
 
 </div>

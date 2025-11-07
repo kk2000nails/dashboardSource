@@ -4,7 +4,7 @@
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
     import TimePicker from "./timePicker.svelte";
-    import { pb } from "../api.svelte";
+    import { pb, refreshData } from "../api.svelte";
 
     const id1 = "pihudfgs";
     const id2 = "poihadfgiunsdf";
@@ -110,6 +110,7 @@
             appointmentView.type = "";
             appointmentView.year = now.getFullYear();
             addNotification('success', 'Appointment Deleted!', 5000, Check);
+            await refreshData();
             replace('/')
         } catch {
             addNotification('fail', 'Something went wrong... Try again later', 5000, HeartCrack);

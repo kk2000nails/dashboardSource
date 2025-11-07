@@ -7,7 +7,7 @@
   import { addNotification, appState, color, getTimeUntil, loadSettings, notifications, settings } from "./global.svelte"; 
   import { fade, fly, slide } from "svelte/transition";
 
-  import { convertPocketToJson, loadAppointments, pb } from './api.svelte'
+  import { convertPocketToJson, loadAppointments, pb, refreshData } from './api.svelte'
 
   $effect(() => {
       const colorVars = {
@@ -40,8 +40,7 @@
 
     loadSettings();
 
-    appState.appointments = [];
-    await loadAppointments();
+    await refreshData();
 
     pb.collection('appointments').subscribe('*', async (e) => {
       if(e.action == "create"){
@@ -49,20 +48,14 @@
         let a = convertPocketToJson(e.record);
         appState.appointments.push(a);
         a.timeUntil = getTimeUntil(a);
-      } else if (e.action == 'delete' || e.action == "update"){
+      } else if (e.action == "update"){
         // do this for delete and update because I'm lazy. Change later
-        appState.appointments = [];
-        await loadAppointments();
-        for(let a of appState.appointments){
-          a.timeUntil = getTimeUntil(a);
-        }
+        await refreshData();
       }
     });
 
 
-    for(let a of appState.appointments){
-      a.timeUntil = getTimeUntil(a);
-    }
+   
   })
 
   onDestroy(async () => {

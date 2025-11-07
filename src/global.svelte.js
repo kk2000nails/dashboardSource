@@ -59,7 +59,7 @@ export let color = $state(
         lightMainColor: "#00ad85ff",
         dimMainColor: "#006e55ff",
         grayColor: "#2f2f2f",
-        inputColor: "#161616d0",
+        inputColor: "#006e5580",
         bgColor: "#0f0f0f",
         lightBgColor: "#181818",
         lighterBgColor: "#232323",
@@ -252,13 +252,14 @@ export const getID = () => {
 export let settings = $state({
     clock24hr: false,
     animations: true,
-    
+    notifications: true,
 })
 
 export const saveGlobal = () => {
     const data = {
         clock24hr: settings.clock24hr,
         animations: settings.animations,
+        notifications: settings.notifications,
         colorIndex: color.index
     }
     localStorage.setItem("settings", JSON.stringify(data));
@@ -272,6 +273,7 @@ export const loadSettings = async () => {
     }
     settings.clock24hr = data.clock24hr;
     settings.animations = data.animations;
+    settings.notifications = data.notifications;
     color.index = data.colorIndex;
     loadTheme(themes[data.colorIndex], color.index);
 }
@@ -367,6 +369,9 @@ export const removeNotification = (thing) => {
 }
 
 export const addNotification = (type, content, time, icon) => {
+    if(!settings.notifications){
+        return;
+    }
     let thing = {type: type, content: content, icon: icon, id: getID()};
     notifications.push(thing);
     setTimeout(() => {
