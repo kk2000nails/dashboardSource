@@ -2,6 +2,7 @@
     import { onMount, tick } from "svelte";
     import { appState, newData } from "../global.svelte";
     import { push, replace } from 'svelte-spa-router';
+    import { refreshData } from "../api.svelte";
 
     let now = new Date();
     let year = $state(now.getFullYear());
@@ -44,8 +45,10 @@
     let isVisible = $state(false);
 
     onMount(async () => {
-        await tick();
-        refreshData(month, year);
+        await refreshData();
+        await refresh(month, year);
+
+
         const obs = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
@@ -58,11 +61,11 @@
         );
 
         obs.observe(target);
-
-
+        
     });
 
-    const refreshData = (month, year) => {
+
+    const refresh = (month, year) => {
         // pad start
         let output = [];
 
@@ -108,7 +111,7 @@
         if(isVisible){
             if(!loading){
                 loading = true;
-                refreshData(
+                refresh(
                    (month + page) % 12,
                     year + Math.floor((page + month) / 12)
                 )
@@ -123,17 +126,11 @@
     })
 
     const focus = (a, m, d) => {
-        if(a.appt.length == 0){
-            // if there is not an appointment, go to the new one
-            newData.month = m;
-            console.log(a);
-            newData.date = a.date;
-            replace('/new');
-            return;
-        }
+
+        console.log("Focusing!", a);
 
         appState.focusAppt = a;
-        appState.focusAppt.month = months[m];
+        appState.focusAppt.month = m;
         appState.focusAppt.day = d;
         push('/calendar/focus');
     }

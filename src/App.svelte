@@ -1,5 +1,5 @@
 <script>
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, tick } from "svelte";
   import { Menu } from "@lucide/svelte";
   import { routes } from "./routes.svelte";
   import Router, {location } from "svelte-spa-router";
@@ -7,7 +7,7 @@
   import { addNotification, appState, color, getTimeUntil, loadSettings, notifications, settings } from "./global.svelte"; 
   import { fade, fly, slide } from "svelte/transition";
 
-  import { convertPocketToJson, loadAppointments, pb, refreshData } from './api.svelte'
+  import { convertPocketToJson, loadAppointments, loadTechnicians, pb, refreshData } from './api.svelte'
 
   $effect(() => {
       const colorVars = {
@@ -38,19 +38,27 @@
   // this just runs on load
   onMount(async () => {
 
-    loadSettings();
+    await tick();
 
-    await refreshData();
+    loadSettings();
+    await loadAppointments();
+    await loadTechnicians();
 
     pb.collection('appointments').subscribe('*', async (e) => {
       if(e.action == "create"){
-        console.log("This is doing stuff!");
-        let a = convertPocketToJson(e.record);
-        appState.appointments.push(a);
-        a.timeUntil = getTimeUntil(a);
+        await refreshData();
       } else if (e.action == "update"){
         // do this for delete and update because I'm lazy. Change later
         await refreshData();
+      }
+    });
+
+    pb.collection('technicians').subscribe('*', async (e) => {
+      if(e.action == "create"){
+        await loadTechnicians();
+      } else if (e.action == "delete"){
+        // do this for delete and update because I'm lazy. Change later
+        await loadTechnicians();
       }
     });
 
@@ -60,6 +68,7 @@
 
   onDestroy(async () => {
     pb.collection('appointments').unsubscribe("*");
+    pb.collection('technicians').unsubscribe('*');
   });
 
   setInterval(() => {
@@ -79,16 +88,6 @@ Globally Positioned Elements
 <button id='toggleButton' style="{appState.sidebarToggle ? "color: var(--light-main-color);" : "var(--text-color);"}" class='toggleButton {settings.animations ? "anims" : ""}' onclick={() => {appState.sidebarToggle = !appState.sidebarToggle;}}>
   <Menu style='z-index: ' size={40}/>
 </button>
-
-<!-- Red dot notification -->
-
-{#if appState.homeNotification}
-  <div class="dotNotification"
-    transition:fade={{ duration: settings.animations ? 250 : 0 }}
-  >
-
-  </div>
-{/if}
 
 <!-- Popup notifications -->
 
@@ -199,8 +198,8 @@ Main Container
   }
 
   .desktop {
-    min-width: 150px;
-    max-width: 150px;
+    min-width: 175px;
+    max-width: 175px;
   }
 
   .contentContainer {

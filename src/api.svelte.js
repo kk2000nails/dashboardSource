@@ -28,7 +28,7 @@ export const deleteDone = async () => {
 }
 
 export const refreshData = async () => {
-    appState.appointments = [];
+    appState.appointments.length = 0;
     await loadAppointments();
     for(let a of appState.appointments){
         a.timeUntil = getTimeUntil(a);
@@ -53,6 +53,7 @@ export const convertPocketToJson = (i) => {
         duration: i.duration,
         timeUntil: "",
         notes: i.notes,
+        tech: i.tech,
         id: i.id
     }
 }
@@ -62,7 +63,16 @@ export const loadAppointments = async () => {
         sort: '-created'
     });
 
+
     for(let i of response){
         appState.appointments.push(convertPocketToJson(i));
+    }
+}
+
+export const loadTechnicians = async () => {
+    appState.technicians.length = 0;
+    const response = await pb.collection('technicians').getFullList();
+    for(let i of response){
+        appState.technicians.push(i);
     }
 }

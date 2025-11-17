@@ -1,8 +1,9 @@
 <script>
-    import { onMount } from "svelte";
-    import { Clock, HeartCrack} from "@lucide/svelte";
-    import { appState, getRandomItem, settings, viewAppt } from "../global.svelte";
-
+    import { onMount, tick } from "svelte";
+    import { Clock, HeartCrack, Printer} from "@lucide/svelte";
+    import { appState, getRandomItem, newData, settings, viewAppt } from "../global.svelte";
+    import { loadTechnicians } from "../api.svelte";
+    import { replace } from 'svelte-spa-router';
 const collisionManager = (array) => {
     // if an item is within the threshold minutes of an item before, group it into a row
     const groupingThreshold = 0;
@@ -129,7 +130,10 @@ const to_bottom = () => {
     thing.scrollTop = thing.scrollHeight;
 }
 
-onMount(() => {
+onMount(async () => {
+
+    await loadTechnicians();
+
     let first = 10000;
     for(let i of appointments){
         let time = (i.time / 1440) * 100;
@@ -138,64 +142,156 @@ onMount(() => {
         }
     }
 
-
-    first += 10;
-    if(first > 0){
-        let thing = document.getElementById('main')
-        thing.scrollTop = (first / 100) * (thing.scrollHeight - thing.clientHeight)
-    }
-
 })
 
-   
+const generateData = (data) => {
+    let output = [];
+    for(let t of appState.technicians){
+        let temp = [];
+        for(let i = 0; i < 41; i++){
+            temp.push({size: 1, appt: null, start: i * 15});
+        }
+        output.push({name: t.name, data: temp});
+    }
+    for(let a of data.appt){
+        for(let i of output){
+            if(a.tech == i.name){
+                // get index
+                const index = (a.time - 570) / 15;
+                let duration = a.duration / 15;
+                i.data[index].appt = a;
+                i.data[index].size = duration;
+                i.data.splice(index + 1, duration - 1);
+                break;
+            }
+        }
+    }
+
+    return output;
+}
+
+
+const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+];
+
+let data = $derived(generateData(appState.focusAppt));
+
+   //66
+
+
+    const focusThing = (a, t, start) => {
+        newData.technician = t;
+        newData.date = appState.focusAppt.date;
+        newData.month = appState.focusAppt.month;
+        newData.startHours = Math.floor((start + 570) / 60);
+        newData.startMinutes = (start + 570) % 60;
+        if(a == null){
+            // if there is not an appointment, go to the new one
+            newData.endHours = Math.floor((start + 570 + 45) / 60);
+            newData.endMinutes = (start + 570 + 45) % 60;
+            replace('/new');
+        } else {
+            viewAppt(a);          
+        }
+
+    }
+
+    const printSheet = () => {
+        if(settings.notifications){
+            alert("Printing may not work properly on mobile devices and certain browsers. Make sure you're on a computer and using chrome for best results.")
+        }
+        window.print();
+    }
+
+    const printBlank = async () => {
+        isBlank = true;
+        await tick();
+        if(settings.notifications){
+            alert("Printing may not work properly on mobile devices and certain browsers. Make sure you're on a computer and using chrome for best results.")
+        }
+        window.print();
+        isBlank = false;
+    }
+
+    let isBlank = $state(false);
 
 </script>
 
 
-<div class="main" id='main'>
+<div class="main" id='print'>
     {#if appState.focusAppt}
 
-        <div class="headerRow">
-            <h1>{appState.focusAppt.month} {appState.focusAppt.date}{getDateSuffix(appState.focusAppt.date)}</h1>
+        <div class="headerRow noPrint">
+            <h1>{months[appState.focusAppt.month]} {appState.focusAppt.date}{getDateSuffix(appState.focusAppt.date)}</h1>
         </div>
+
+        <div class="control noPrint">
+            <button onclick={printSheet} class='noPrint nextButton'>
+                <Printer size={20} />
+                Print
+            </button>
+            <button onclick={printBlank} class='noPrint nextButton'>
+                <Printer size={20} />
+                Print Blank Sheet
+            </button>
+        </div>
+
+
 
         <div class="timeDisplay">
 
             <div class="timeRow">
-                {#each {length: 24} as _, i}
-                    <h3>{getTime(i * 60)}</h3>
-                    <h4>{getTime((i * 60) + 30)}</h4>
+                <div class="timeBox"></div>
+                {#each {length: 41} as _, i}
+                    <div class="timeBox">
+                        <h3>{getTime(i * 15  + 570)}</h3>
+                    </div>
+
                 {/each}
             </div>
 
             <div class="apptArea">
-                {#each appointments as row, rowIndex}
-                    {#each row.data as appt, apptIndex}
-                        {@const start = (appt.time / 1440) * 100}
-                        {@const duration = (appt.duration / 1440) * 100}
-                        {@const width = (100 / row.data.length)}
-                        <label for='r{rowIndex}a{apptIndex}' class="appt" style="z-index: {rowIndex}; top: {start}%; left: calc({width * apptIndex}% + {row.offset * 12}px - {((row.offset * 12) / row.data.length) * apptIndex}px + 10px); height: {duration}%; width: calc({width}%  - {(row.offset * 12) / row.data.length}px - 10px);">
-                            <p class='apptHeader'>{appt.clientName}</p>
 
-                            {#if appt.duration >= 45}
-                                <div class="apptInfo">
+                {#each data as d}
 
-                                    <div class='icon'>
-                                        <Clock size={18} /> 
-                                    </div> 
-                                    <p class='apptTime'>{getTimeAndDuration(appt)}</p>
+                    <div class="col">
 
+                        <div class="colHeader">
+                            <p>{d.name}</p>
+                        </div>
+
+                        {#if !isBlank}
+
+                            <!-- svelte-ignore a11y_no_static_element_interactions -->
+                            {#each d.data as i, index}
+                                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                                <div class="row" style="min-height: {i.size * 25}px" onclick={() => focusThing(i.appt, d.name, i.start)}>
+                                    <p style='margin: 0px'>{i.appt != null ? i.appt.clientName : ""}</p>
                                 </div>
-                            {/if}
-    
-                        </label>
-                        <button id='r{rowIndex}a{apptIndex}' onclick={() => viewAppt(appt)} class='invis'>View appointment</button>
-                    {/each}
-                {/each}
+                            {/each}
 
-                {#each {length: 48} as _, i}
-                    <div class="row">
+                        {:else}
+                            {#each {length: 41} as i, index}
+                                <div class="row" style="min-height: 25px">
+                                </div>
+                            {/each}
+                        {/if}
+
                     </div>
+
+
                 {/each}
             </div>
 
@@ -216,156 +312,127 @@ onMount(() => {
 
 <style>
 
+    
+    .nextButton {
+        width: fit-content;
+        background-color: var(--lighter-bg-color);
+        border: none;
+        font-size: 20px;
+        color: var(--header-color);
+        box-sizing: border-box;
+        padding: 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        gap: 10px;
+    }
+
+    .control {
+        margin-left: auto;
+        margin-right: auto;
+        gap: 10px;
+        box-sizing: border-box;
+        display: flex;
+    }
+
+    .col {
+        border-right: 1px solid var(--gray-color);
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .col p {
+        margin: 0px;
+    }
+
+    .colHeader {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        color: var(--header-color);
+    }
 
     .timeDisplay {
         width: 100%;
         height: fit-content;
         display: flex;
         flex-direction: row;
+        box-sizing: border-box;
+        border-top: 1px solid var(--gray-color);
     }
 
     .timeRow {
         height: 100%;
         display: flex;
         flex-direction: column;
-        padding-left: 30px;
-        padding-right: 20px;
         box-sizing: border-box;
-
+        border-right: 1px solid var(--gray-color);
+        border-left: 1px solid var(--gray-color);
     }
 
-    
-    .timeRow h3 {
-        min-height: 50px;
-        margin: 0px;
-        color: var(--header-color);
-    }
-
-    .timeRow h4 {
-        min-height: 50px;
-        margin: 0px;
-        color: var(--gray-color);
-    }
-
-    .appt {
-        display: flex;
-        position: absolute;
+    .timeBox {
+        border-bottom: 1px solid var(--gray-color); 
         box-sizing: border-box;
-        border-left: 4px solid var(--main-color);
-        padding-left: 20px;
-        font-size: 18px;
-        flex-direction: column;
-        padding-top: 10px;
-        background-color: var(--input-color);
-        color: var(--header-color);
-        backdrop-filter: blur(2px);
-        border-top-right-radius: 5px;
-        border-bottom-right-radius: 5px;
-        overflow: hidden;
-        min-width: fit-content;
-        padding-right: 10px;
-    }
-
-    .appt:hover {
-        z-index: 999 !important;
-        cursor: pointer;
-    }
-
-    .apptHeader {
-        font-size: 20px; 
-        font-weight: bold; 
-        z-index: 15;
-    }
-
-    .appt p {
-        margin: 0px;
-    }
-
-    .apptTime {
-        align-items: center; 
-        display: flex; 
-        gap: 5px; 
-    }
-
-    .icon {
+        height: fit-content;
+        min-height: 25px;
         justify-content: center;
-        display: flex;
         align-items: center;
+        display: flex;
+        padding: 5px;
     }
 
-    .apptInfo {
+    .timeBox * {
+        color: var(--header-color);
+    }
+
+    .row * {
+        color: var(--header-color);
+    }
+
+
+        
+    .timeBox h3 {
+        margin: 0px;
+        font-size: 14px;
+        line-height: 0px;
+        color: var(--header-color);
         width: 100%;
+        max-height: 25px;
         display: flex;
-        align-items: center;
-        flex-direction: row;
-        gap: 5px;
-        box-sizing: border-box;
-        z-index: 9999;
     }
 
     .apptArea {
-        margin-top: 13px;
         height: fit-content;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         position: relative;
         width: 100%;
         box-sizing: border-box;
-        margin-right: 10px;
     }
 
     .row {
-        min-height: 50px;
         width: 100%;
-        border-top: 2px solid var(--lighter-bg-color);
+        border-top: 1px solid var(--gray-color);
         box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color .25s ease;
+        cursor: pointer;
+    }
+
+    .row:hover {
+        background-color: var(--lighter-bg-color);
     }
 
     @media (max-width: 750px){
-        .apptHeader {
-            font-size: 18px;
-        }
-
-        .apptTime {
-            font-size: 16px;
-        }
-
-        .icon {
-            zoom: 0.888888888889;
-        }
-
-        .appt {
-            padding-left: 10px;
-        }
-
-    }
-    
-    @media (max-width: 600px){
-        .apptHeader {
-            font-size: 16px;
-        }
-        
-        .apptTime {
-            font-size: 14px;
-        }
-
-        .icon {
-            zoom: 0.777777777778;
+        .timeDisplay {
+            zoom: 0.75;
         }
     }
 
-    @media (max-width:  450px){    
-        .apptHeader {
-            font-size: 14px;
-        }
-
-        .apptTime {
-            font-size: 12px;
-        }
-
-        .icon {
-            zoom: 0.666666666667;
-        }
-    }
 
 </style>

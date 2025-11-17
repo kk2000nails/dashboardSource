@@ -1,10 +1,16 @@
 <script>
     import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Trash} from "@lucide/svelte";
-    import { addNotification, appointmentView, settings } from "../global.svelte";
+    import { addNotification, appointmentView, appState, settings } from "../global.svelte";
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
     import TimePicker from "./timePicker.svelte";
-    import { pb, refreshData } from "../api.svelte";
+    import { loadTechnicians, pb, refreshData } from "../api.svelte";
+    import { slide } from "svelte/transition";
+    import { onMount } from "svelte";
+
+    onMount(async () => {
+        await loadTechnicians();
+    })
 
     const id1 = "pihudfgs";
     const id2 = "poihadfgiunsdf";
@@ -80,7 +86,8 @@
             "duration": duration,
             "type": appointmentView.type,
             "clientName": appointmentView.clientName,
-            "notes": appointmentView.notes
+            "notes": appointmentView.notes,
+            "tech": appointmentView.tech
         }
 
         try {
@@ -181,6 +188,28 @@
 
                 <TimePicker bind:minutes={appointmentView.endMinutes} bind:hours={appointmentView.endHours} id={id2}/>
 
+                <div class="spacer"></div>
+
+                <div class="inputRow">
+                    <User size={20} />
+                    <p class='idkText'>Technician</p>
+                    <label for='focus4' class='focusLabel'>
+                        <p>{appointmentView.tech}</p>
+                    </label>
+                </div>
+
+                <label class="dropDown"
+                    transition:slide={{ duration: settings.animations ? 250 : 0 }}
+                >
+                    {#each appState.technicians as t, i}
+                        <label for='s{i}' class='item'>
+                            {t.name}
+                        </label>
+                        <button class='invis' id='s{i}' onclick={() => {appointmentView.tech = t.name;}}>Select Pack</button>
+                    {/each}
+                </label>
+
+
 
             </div>
 
@@ -206,6 +235,56 @@
 </div>
 
 <style>
+
+        .nextButton {
+        width: fit-content;
+        background-color: var(--lighter-bg-color);
+        border: none;
+        font-size: 20px;
+        color: var(--header-color);
+        box-sizing: border-box;
+        padding: 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        gap: 10px;
+    }
+
+    .dropDown {
+        border-radius: 5px;
+        width: 100%;
+        display: flex;
+        box-sizing: border-box;
+        position: relative;
+        padding-left: 10px;
+        padding-right: 10px;
+        background-color: var(--lighter-bg-color);
+        font-size: var(--msg-font-size);
+        cursor: pointer;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .item {
+        width: fit-content;
+        display: flex;
+        font-size: 18px;
+        padding: 5px;
+        box-sizing: border-box;
+        cursor: pointer;
+        transition: background-color 250ms ease;
+        background-color: var(--light-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    .item:hover {
+        background-color: var(--lightest-bg-color);
+    }
 
 .buttonRow {
     width: 100%;

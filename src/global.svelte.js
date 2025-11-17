@@ -1,9 +1,10 @@
 import { replace } from "svelte-spa-router";
+import AppointmentView from "./lib/appointmentView.svelte";
 
 export let appState = $state({
     sidebarToggle: false,
     appointments: [],
-    homeNotification: false,
+    technicians: [],
     focusAppt: null,
 });
 
@@ -17,6 +18,11 @@ export let newData = $state(
         month: now.getMonth(),
         year: now.getFullYear(),
         notes: "",
+        startHours: 12,
+        startMinutes: 0,
+        endHours: 12,
+        endMinutes: 45,
+        technician: "",
     }
 )
 
@@ -31,6 +37,7 @@ export let appointmentView = $state({
     month: now.getMonth(),
     year: now.getFullYear(),
     notes: "",
+    tech: "",
     id: "",
 })
 
@@ -46,6 +53,7 @@ export let viewAppt = (a) => {
     appointmentView.year = a.year;
     appointmentView.notes = a.notes;
     appointmentView.id = a.id;
+    appointmentView.tech = a.tech;
     replace('/apptView');
 }
 
@@ -323,7 +331,6 @@ export const getTimeUntil = (a) => {
     const hoursUntil = diff / 60;
     const minutesUntil = diff % 60;
     if((diff + a.duration) < 0){
-        appState.homeNotification = true;
         return 'Done';
     }
 

@@ -19,8 +19,8 @@
 
 ! BUGS
 
-[X] Highkey dont know why it happens but sometimes the timeUntil field depopulates
-
+[ ] Highkey dont know why it happens but sometimes the timeUntil field depopulates
+[ ] Sometimes, creating a new appointment and redirecting to calendar will cause some sort of weird issue. Fixes on refresh but still
 !!! BEFORE RELEASE !!!
 
 Make sure to set up the server off of georgeeggers.xyz, and switch it to the domain we actually choose

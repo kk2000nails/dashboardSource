@@ -2,7 +2,7 @@
     import {replace, location} from 'svelte-spa-router';
     import { appState } from '../global.svelte';
     import { fade } from 'svelte/transition';
-    import { House, CirclePlus, CalendarDays, Settings2, PaintBucket } from '@lucide/svelte';
+    import { House, CirclePlus, CalendarDays, Settings2, PaintBucket, User } from '@lucide/svelte';
 </script>
 
 
@@ -13,19 +13,13 @@
         <div class="header">
             <p>KK 2000 Nails</p>
         </div>
-        <label for='home' class="option {($location) == "/" ? 'highlighted' : ""}">
+        <label for='home' class="option {($location) == "/" || ($location) == '/calendar/focus' ? 'highlighted' : ""}">
             <House size={24} />
             <p>Home</p>
-            {#if appState.homeNotification}
-                <div class="notification"
-                    transition:fade={{ duration: 250 }}
-                >
-                </div>
-            {/if}
         </label>
 
 
-        <button class='invis' id='home' onclick={() => {appState.sidebarToggle = false; appState.homeNotification = false; replace('/')}}>toHome</button>
+        <button class='invis' id='home' onclick={() => {appState.sidebarToggle = false; replace('/')}}>toHome</button>
 
         <label for='new' class="option {($location) == "/new" ? 'highlighted' : ""}">
             <CirclePlus size={24} />
@@ -34,12 +28,20 @@
 
         <button class='invis' id='new' onclick={() => {appState.sidebarToggle = false; replace('/new')}}>tonew</button>
 
-        <label for='calendar' class="option {($location) == "/calendar" || ($location) == '/calendar/focus' ? 'highlighted' : ""}">
+        <label for='calendar' class="option {($location) == "/calendar" ? 'highlighted' : ""}">
             <CalendarDays size={24} />
-            <p>Calendar</p>
+            <p>Upcoming</p>
         </label>
 
         <button class='invis' id='calendar' onclick={() => {appState.sidebarToggle = false; replace('/calendar')}}>tocalendar</button>
+
+        <label for='users' class="option {($location) == "/users" ? 'highlighted' : ""}">
+            <User size={24} />
+            <p>Techs</p>
+        </label>
+
+        <button class='invis' id='users' onclick={() => {appState.sidebarToggle = false; replace('/users')}}>tocalendar</button>
+
     </div>
 
     <div class="optionGroup">
@@ -65,17 +67,6 @@
 </div>
 
 <style>
-
-    .notification {
-        width: 12px;
-        height: 12px;
-        position: absolute;
-        right: -1px;
-        top: -1px;
-        display: flex;
-        background-color: var(--fail-color);
-        border-radius: 50%;
-    }
 
     .smain {
         width: 100%;

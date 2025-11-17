@@ -54,6 +54,7 @@ const isValidSearch = (m) => {
     let day = days[m.day].toLowerCase();
     let month = months[m.month].toLowerCase();
     let notes = m.notes;
+    let tech = m.tech.toLowerCase();
     for(let s of searchTerm.split(" ").filter(Boolean)){
         let l = s.toLowerCase();
         if(!(
@@ -61,7 +62,8 @@ const isValidSearch = (m) => {
             type.includes(l) || 
             day.includes(l) || 
             month.includes(l) || 
-            notes.includes(l)
+            notes.includes(l) || 
+            tech.includes(l)
         )){
             return false;
         }
@@ -184,6 +186,10 @@ let isDone = $derived(isDoneAppointment());
                                 <div class="item">
                                     <Calendar1 size={18} />
                                     <p>{buildDate(a)}</p>
+                                </div>
+                                <div class="item">
+                                    <User size={18} />
+                                    <p>{a.tech}</p>
                                 </div>
                                 {#if a.notes.length >= 1}
                                     <div class="item">

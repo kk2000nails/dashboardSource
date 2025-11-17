@@ -46,8 +46,8 @@
     <ChevronRight size={22} />
     </label>
 
-    <button id='leftStartMin{id}' class='invis' onclick={() => changeMinutes(-5)}>Left Min</button>
-    <button id='rightStartMin{id}'class='invis' onclick={() => changeMinutes(5)}>Right Min</button>
+    <button id='leftStartMin{id}' class='invis' onclick={() => changeMinutes(-15)}>Left Min</button>
+    <button id='rightStartMin{id}'class='invis' onclick={() => changeMinutes(15)}>Right Min</button>
 
 </div>
 

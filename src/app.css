@@ -95,3 +95,52 @@ input, textarea {
 h1, h2, h3, h4, h5, h6 {
   color: var(--header-color);
 }
+
+@media print {
+  @page {
+    margin: 20px;
+  }
+
+  .noPrint {
+    display: none !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+
+  .main#print, .main#print * {
+    visibility: visible;
+    color: black;
+    border-color: black;
+  }
+
+  .main#print {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 0px;
+    margin: 0px;
+  }
+
+  .timeDisplay {
+    height: 100%;
+    zoom: 0.9 !important;
+  }
+
+  .timeRow,
+  .apptArea {
+    height: 100%;
+  }
+
+  .timeBox {
+    height: 100%;
+  }
+
+  h3 {
+    margin: 0px !important;
+  }
+}

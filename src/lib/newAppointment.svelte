@@ -1,18 +1,21 @@
 <script>
     import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack} from "@lucide/svelte";
-    import { addNotification, newData, settings } from "../global.svelte";
+    import { addNotification, appState, newData, settings } from "../global.svelte";
     let focused = $state(-1);
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
     import TimePicker from "./timePicker.svelte";
-    import { pb } from "../api.svelte";
+    import { loadTechnicians, pb } from "../api.svelte";
+    import { slide } from "svelte/transition";
+    import { onMount } from "svelte";
 
     const debug = true;
 
-    let sMinutes = $state(0);
-    let sHour = $state(12);
-    let endMinutes = $state(45);
-    let endHours = $state(12);
+    onMount(async () => {
+        await loadTechnicians();
+    })
+
+
     const id1 = "pihudfgs";
     const id2 = "poihadfgiunsdf";
 
@@ -76,8 +79,8 @@
     }
 
     const getDuration = () => {
-        let end = endHours * 60 + endMinutes;
-        let start = sHour * 60 + sMinutes;
+        let end = newData.endHours * 60 + newData.endMinutes;
+        let start = newData.startHours * 60 + newData.startMinutes;
         return end - start;
     }
 
@@ -89,14 +92,15 @@
             return;
         }
 
-        let dateString = `${newData.year}-${(newData.month + 1) < 10 ? `0${(newData.month + 1)}` : (newData.month + 1)}-${newData.date < 10 ? `0${newData.date}` : newData.date} ${sHour < 10 ? `0${sHour}` : sHour}:${sMinutes < 10 ? `0${sMinutes}` : sMinutes}:00.123Z`;
+        let dateString = `${newData.year}-${(newData.month + 1) < 10 ? `0${(newData.month + 1)}` : (newData.month + 1)}-${newData.date < 10 ? `0${newData.date}` : newData.date} ${newData.startHours < 10 ? `0${newData.startHours}` : newData.startHours}:${newData.startMinutes < 10 ? `0${newData.startMinutes}` : newData.startMinutes}:00.123Z`;
         console.log(dateString);
         let data = {
             "startTime": dateString,
             "duration": duration,
             "type": newData.type,
             "clientName": newData.clientName,
-            "notes": newData.notes
+            "notes": newData.notes,
+            "tech": newData.technician,
         }
 
         try {
@@ -108,6 +112,10 @@
             newData.notes = "";
             newData.type = "";
             newData.year = now.getFullYear();
+            newData.startHours = 12;
+            newData.startMinutes = 0;
+            newData.endHours = 12;
+            newData.endMinutes = 45;
             addNotification('success', 'Appointment created!', 5000, Check);
             replace('/')
         } catch {
@@ -162,13 +170,13 @@
                     <Clock1 size={20} />
                     <p class='idkText'>Start Time</p>
                     <label for='focus2' class='focusLabel'>
-                        <p>{buildTime(sHour, sMinutes)}</p>
+                        <p>{buildTime(newData.startHours, newData.startMinutes)}</p>
                     </label>
                     <button class='invis' id='focus2' onclick={() => focus(2)}>Focus Start Time</button>
                 </div>
 
                 {#if focused == 2}
-                    <TimePicker bind:minutes={sMinutes} bind:hours={sHour} id={id1}/>
+                    <TimePicker bind:minutes={newData.startMinutes} bind:hours={newData.startHours} id={id1}/>
                 {/if}
 
                 <div class="spacer"></div>
@@ -177,14 +185,38 @@
                     <Clock10 size={20} />
                     <p class='idkText'>End Time</p>
                     <label for='focus3' class='focusLabel'>
-                        <p>{buildTime(endHours, endMinutes)}</p>
+                        <p>{buildTime(newData.endHours, newData.endMinutes)}</p>
                     </label>
                     <button class='invis' id='focus3' onclick={() => focus(3)}>Focus End Time</button>
                 </div>
 
 
                 {#if focused == 3}
-                    <TimePicker bind:minutes={endMinutes} bind:hours={endHours} id={id2}/>
+                    <TimePicker bind:minutes={newData.endMinutes} bind:hours={newData.endHours} id={id2}/>
+                {/if}
+
+                <div class="spacer"></div>
+
+                <div class="inputRow">
+                    <User size={20} />
+                    <p class='idkText'>Technician</p>
+                    <label for='focus4' class='focusLabel'>
+                        <p>{newData.technician == "" ? "Select..." : newData.technician}</p>
+                    </label>
+                    <button class='invis' id='focus4' onclick={() => focus(4)}>Focus Technicians</button>
+                </div>
+
+                {#if focused == 4}
+                    <label class="dropDown {focused == 4 ? "focused" : ""}" for="focus2"
+                      transition:slide={{ duration: settings.animations ? 250 : 0 }}
+                    >
+                        {#each appState.technicians as t, i}
+                            <label for='s{i}' class='item'>
+                                {t.name}
+                            </label>
+                            <button class='invis' id='s{i}' onclick={() => {newData.technician = t.name;}}>Select Pack</button>
+                        {/each}
+                    </label>
                 {/if}
 
 
@@ -217,6 +249,41 @@
         display: flex;
         gap: 10px;
     }
+
+    .dropDown {
+        border-radius: 5px;
+        width: 100%;
+        display: flex;
+        box-sizing: border-box;
+        position: relative;
+        padding-left: 10px;
+        padding-right: 10px;
+        background-color: var(--lighter-bg-color);
+        font-size: var(--msg-font-size);
+        cursor: pointer;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .item {
+        width: fit-content;
+        display: flex;
+        font-size: 18px;
+        padding: 5px;
+        box-sizing: border-box;
+        cursor: pointer;
+        transition: background-color 250ms ease;
+        background-color: var(--light-bg-color);
+        padding: 10px;
+        border-radius: 10px;
+        margin-left: auto;
+    }
+
+    .item:hover {
+        background-color: var(--lightest-bg-color);
+    }
+
 
 .idkText {
     margin: 0px; 
