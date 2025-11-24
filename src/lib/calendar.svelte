@@ -1,6 +1,6 @@
 <script>
     import { onMount, tick } from "svelte";
-    import { appState, newData } from "../global.svelte";
+    import { appState, newData, settings } from "../global.svelte";
     import { push, replace } from 'svelte-spa-router';
     import { refreshData } from "../api.svelte";
 
@@ -181,29 +181,31 @@
                                         </div>
                                     </div>
                                     <div class="calData">
-                                        {#each a.appt.toSorted((a, b) => {
-                                            const aTime = new Date(a.year, a.month, a.date, Math.floor(a.time / 60), a.time % 60);
-                                            const bTime = new Date(b.year, b.month, b.date, Math.floor(b.time / 60), b.time % 60);
-                                            const now = new Date();
-                                            // ignore this error because it's stupid
-                                            // @ts-ignore
-                                            const aDiff = (aTime - now);
-                                            // @ts-ignore
-                                            const bDiff = (bTime - now);
-                                            if(aDiff > bDiff){
-                                                return 1;
-                                            } else if (aDiff < bDiff){
-                                                return -1;
-                                            }
-                                            return 0;
-                                        }) as appt}
-                                            <div class="appt">
-                                                <div class="dot"
-                                                    style="{appt.timeUntil.includes("For") ? "background-color: var(--main-color);" : (appt.timeUntil == "Done" ? "background-color: var(--fail-color);": "")}"
-                                                ></div>
-                                                <p class='text'>{appt.clientName}</p>
-                                            </div>
-                                        {/each}
+                                        {#if settings.dotNotifications}
+                                            {#each a.appt.toSorted((a, b) => {
+                                                const aTime = new Date(a.year, a.month, a.date, Math.floor(a.time / 60), a.time % 60);
+                                                const bTime = new Date(b.year, b.month, b.date, Math.floor(b.time / 60), b.time % 60);
+                                                const now = new Date();
+                                                // ignore this error because it's stupid
+                                                // @ts-ignore
+                                                const aDiff = (aTime - now);
+                                                // @ts-ignore
+                                                const bDiff = (bTime - now);
+                                                if(aDiff > bDiff){
+                                                    return 1;
+                                                } else if (aDiff < bDiff){
+                                                    return -1;
+                                                }
+                                                return 0;
+                                            }) as appt}
+                                                <div class="appt">
+                                                    <div class="dot"
+                                                        style="{appt.timeUntil.includes("For") ? "background-color: var(--main-color);" : (appt.timeUntil == "Done" ? "background-color: var(--fail-color);": "")}"
+                                                    ></div>
+                                                    <p class='text'>{appt.clientName}</p>
+                                                </div>
+                                            {/each}
+                                        {/if}
                                     </div>
                                 {/if}
                             </label>

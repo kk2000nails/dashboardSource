@@ -60,25 +60,26 @@ export let viewAppt = (a) => {
 
 export let color = $state(
     {
-        name: 'Default',
-        headerColor: "#f8f8f8",
-        textColor: "#c9c9c9",
+        name: 'Light',
+        type: 'light',
+        headerColor: "#020202",
+        textColor: "#080808",
         mainColor: "#018d6c",
-        lightMainColor: "#00ad85ff",
-        dimMainColor: "#006e55ff",
+        lightMainColor: "#00ad85",
+        dimMainColor: "#006e55",
         grayColor: "#2f2f2f",
         inputColor: "#006e5580",
-        bgColor: "#0f0f0f",
-        lightBgColor: "#181818",
-        lighterBgColor: "#232323",
-        lightestBgColor: "#2e2e2e",
+        bgColor: "#f8f8f8",
+        lightBgColor: "#e8e8e8",
+        lighterBgColor: "#dedede",
+        lightestBgColor: "#d1d1d1ff",
         fail: "#a52100",
-        index: 0
+        index: 6
     }
 );
 
 export const themes = [{
-    name: 'Default',
+    name: 'Dark',
     type: 'dark',
     headerColor: "#f8f8f8",
     textColor: "#c9c9c9",
@@ -261,6 +262,7 @@ export let settings = $state({
     clock24hr: false,
     animations: true,
     notifications: true,
+    dotNotifications: false,
 })
 
 export const saveGlobal = () => {
@@ -268,6 +270,7 @@ export const saveGlobal = () => {
         clock24hr: settings.clock24hr,
         animations: settings.animations,
         notifications: settings.notifications,
+        dotNotifications: settings.dotNotifications,
         colorIndex: color.index
     }
     localStorage.setItem("settings", JSON.stringify(data));
@@ -282,7 +285,9 @@ export const loadSettings = async () => {
     settings.clock24hr = data.clock24hr;
     settings.animations = data.animations;
     settings.notifications = data.notifications;
+    settings.dotNotifications = data.dotNotifications;
     color.index = data.colorIndex;
+    console.log(data.colorIndex);
     loadTheme(themes[data.colorIndex], color.index);
 }
 

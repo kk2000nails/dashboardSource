@@ -362,6 +362,7 @@ let data = $derived(generateData(appState.focusAppt));
         flex-direction: row;
         box-sizing: border-box;
         border-top: 1px solid var(--gray-color);
+        text-align: center;
     }
 
     .timeRow {
