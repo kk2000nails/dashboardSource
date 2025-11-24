@@ -1,5 +1,5 @@
 <script>
-    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Trash} from "@lucide/svelte";
+    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Trash, Phone} from "@lucide/svelte";
     import { addNotification, appointmentView, appState, settings } from "../global.svelte";
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
@@ -87,7 +87,8 @@
             "type": appointmentView.type,
             "clientName": appointmentView.clientName,
             "notes": appointmentView.notes,
-            "tech": appointmentView.tech
+            "tech": appointmentView.tech,
+            "phone": appointmentView.phone
         }
 
         try {
@@ -143,7 +144,16 @@
                     <User size={20} />
                     <input placeholder='Client Name...' bind:value={appointmentView.clientName}>
                 </div>
+
                 <div class="spacer"></div>
+
+                <div class="inputRow">
+                    <Phone size={20}/>
+                    <input id='phone' placeholder='Phone...' bind:value={appointmentView.phone}>
+                </div>
+        
+                <div class="spacer"></div> 
+
                 <div class="inputRow">
                     <ListTodo size={20}/>
                     <input id='type' placeholder='Appointment Type...' bind:value={appointmentView.type}>

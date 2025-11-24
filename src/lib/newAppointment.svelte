@@ -1,5 +1,5 @@
 <script>
-    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack} from "@lucide/svelte";
+    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Phone} from "@lucide/svelte";
     import { addNotification, appState, newData, settings } from "../global.svelte";
     let focused = $state(-1);
     import { replace } from 'svelte-spa-router';
@@ -100,6 +100,7 @@
             "type": newData.type,
             "clientName": newData.clientName,
             "notes": newData.notes,
+            "phone": newData.phone,
             "tech": newData.technician,
         }
 
@@ -138,9 +139,18 @@
 
                 <div class="inputRow">
                     <User size={20} />
-                    <input placeholder='Client Name...' bind:value={newData.clientName} onkeydown={(e) => e.key === "Enter" && focusElement('type')}>
+                    <input placeholder='Client Name...' bind:value={newData.clientName} onkeydown={(e) => e.key === "Enter" && focusElement('phone')}>
                 </div>
+
                 <div class="spacer"></div>
+
+                <div class="inputRow">
+                    <Phone size={20}/>
+                    <input id='phone' placeholder='Phone...' bind:value={newData.phone} onkeydown={(e) => e.key === "Enter" && focusElement('type')}>
+                </div>
+
+                <div class="spacer"></div>
+
                 <div class="inputRow">
                     <ListTodo size={20}/>
                     <input id='type' placeholder='Appointment Type...' bind:value={newData.type} onkeydown={(e) => e.key === "Enter" && focus(1)}>

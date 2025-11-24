@@ -54,6 +54,7 @@ export const convertPocketToJson = (i) => {
         timeUntil: "",
         notes: i.notes,
         tech: i.tech,
+        phone: i.phone,
         id: i.id
     }
 }

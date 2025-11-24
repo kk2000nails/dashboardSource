@@ -3,7 +3,7 @@
 
 
 import { appState, getRandomItem, settings, viewAppt } from "../global.svelte";
-import { Search, User, ListTodo, Clock, Calendar1, HeartCrack, PencilLine, Trash } from "@lucide/svelte";
+import { Search, User, ListTodo, Clock, Calendar1, HeartCrack, PencilLine, Trash, Phone } from "@lucide/svelte";
 
 const days = [
     "Sunday",
@@ -175,6 +175,10 @@ let isDone = $derived(isDoneAppointment());
                             </div>
 
                             <div class="info">
+                                <div class="item">
+                                    <Phone size={18} />
+                                    <p>{a.phone}</p>
+                                </div>
                                 <div class="item">
                                     <ListTodo size={18} />
                                     <p>{a.type}</p>

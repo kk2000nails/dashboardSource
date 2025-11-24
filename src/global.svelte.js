@@ -23,6 +23,7 @@ export let newData = $state(
         endHours: 12,
         endMinutes: 45,
         technician: "",
+        phone: "",
     }
 )
 
@@ -39,6 +40,7 @@ export let appointmentView = $state({
     notes: "",
     tech: "",
     id: "",
+    phone: "",
 })
 
 export let viewAppt = (a) => {
@@ -54,6 +56,7 @@ export let viewAppt = (a) => {
     appointmentView.notes = a.notes;
     appointmentView.id = a.id;
     appointmentView.tech = a.tech;
+    appointmentView.phone = a.phone;
     replace('/apptView');
 }
 
