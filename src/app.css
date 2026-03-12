@@ -144,3 +144,18 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0px !important;
   }
 }
+
+.svgWrapper {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes loading {
+    from { rotate: 0deg }
+    to { rotate: 360deg }
+}
+.loading {
+    animation: 1.5s loading infinite;
+}

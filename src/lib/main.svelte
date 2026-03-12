@@ -195,7 +195,7 @@ let isDone = $derived(isDoneAppointment());
                                     <User size={18} />
                                     <p>{a.tech}</p>
                                 </div>
-                                {#if a.notes.length >= 1}
+                                {#if a.notes != null}
                                     <div class="item">
                                         <p style='font-size: 16px;'>{a.notes}</p>
                                     </div>

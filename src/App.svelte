@@ -7,7 +7,7 @@
   import { addNotification, appState, color, getTimeUntil, loadSettings, notifications, settings } from "./global.svelte"; 
   import { fade, fly, slide } from "svelte/transition";
 
-  import { convertPocketToJson, loadAppointments, loadTechnicians, pb, refreshData } from './api.svelte'
+  import { convertRecordToJson, loadAppointments, loadTechnicians, refreshData } from './api.svelte'
 
   $effect(() => {
       const colorVars = {
@@ -38,38 +38,10 @@
   // this just runs on load
   onMount(async () => {
 
-    await tick();
-
     loadSettings();
     await loadAppointments();
     await loadTechnicians();
-
-    pb.collection('appointments').subscribe('*', async (e) => {
-      if(e.action == "create"){
-        await refreshData();
-      } else if (e.action == "update"){
-        // do this for delete and update because I'm lazy. Change later
-        await refreshData();
-      }
-    });
-
-    pb.collection('technicians').subscribe('*', async (e) => {
-      if(e.action == "create"){
-        await loadTechnicians();
-      } else if (e.action == "delete"){
-        // do this for delete and update because I'm lazy. Change later
-        await loadTechnicians();
-      }
-    });
-
-
-   
   })
-
-  onDestroy(async () => {
-    pb.collection('appointments').unsubscribe("*");
-    pb.collection('technicians').unsubscribe('*');
-  });
 
   setInterval(() => {
     // run this every minute to update time

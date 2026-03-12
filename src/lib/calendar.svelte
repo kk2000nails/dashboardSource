@@ -45,7 +45,6 @@
     let isVisible = $state(false);
 
     onMount(async () => {
-        await refreshData();
         await refresh(month, year);
 
 
@@ -126,8 +125,6 @@
     })
 
     const focus = (a, m, d) => {
-
-        console.log("Focusing!", a);
 
         appState.focusAppt = a;
         appState.focusAppt.month = m;

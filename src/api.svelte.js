@@ -1,14 +1,16 @@
-import Pocket from 'pocketbase';
 import { addNotification, appState, getTimeUntil } from './global.svelte';
 import { Check } from '@lucide/svelte';
 
-// hosting pb on my personal server right now, but we'll have to switch it later
-export const pb = new Pocket('https://georgeeggers.xyz');
+import { createClient } from '@supabase/supabase-js';
+export const SB_KEY = "sb_publishable_UBDi48qUodzBIIcElTWrTA_LzhyjanV"; // not even a private key so we can just publish like ts
+export const sb = createClient("https://sbxythzxwezmeytccogi.supabase.co", SB_KEY);
 
 /*
 
 This contains code for some of the interfacing with the backend API
 There are some file-specific functions in appointmentView.svelte and newAppointment.svelte, so make sure to replace those if changing the backend
+^
+Thanks George from the past. Helpful documentation
 
 */
 
@@ -18,11 +20,13 @@ const getDay = (month, day, year) => {
 }
 
 export const deleteDone = async () => {
+    let targetIDs = [];
     for(let i of appState.appointments){
         if(i.timeUntil == "Done"){
-            await pb.collection('appointments').delete(i.id);
+            targetIDs.push(i.id); // aggregate all done records into a list of their id's
         }
     }
+    const { data, error } = await sb.from('appointments').delete().in('id', targetIDs); // delete all of target ids
     addNotification('success', 'Expired appointments deleted!', 5000, Check);
     await refreshData();
 }
@@ -35,13 +39,13 @@ export const refreshData = async () => {
     }
 }
 
-export const convertPocketToJson = (i) => {
-    let [recordDate, recordTime] = i.startTime.split(" ");
+// formats date and time and returns parsed JSON object from record
+export const convertRecordToJson = (i) => {
+    let [recordDate, recordTime] = i.startTime.split("T");
     let [year, month, date] = recordDate.split("-");
     let [hours, minutes, seconds] = recordTime.split(":");
     let time = (parseInt(hours) * 60) + parseInt(minutes);
 
-    // program just needs to return JSON in this format. Pocketbase is, theoretically, replacable
     return {
         clientName: i.clientName,
         type: i.type,
@@ -60,20 +64,17 @@ export const convertPocketToJson = (i) => {
 }
 
 export const loadAppointments = async () => {
-    const response = await pb.collection('appointments').getFullList({
-        sort: '-created'
-    });
-
-
-    for(let i of response){
-        appState.appointments.push(convertPocketToJson(i));
+    const record = await sb.from('appointments').select();
+    for(let i of record.data){
+        appState.appointments.push(convertRecordToJson(i));
     }
 }
 
 export const loadTechnicians = async () => {
     appState.technicians.length = 0;
-    const response = await pb.collection('technicians').getFullList();
-    for(let i of response){
+    const record = await sb.from('technicians').select();
+
+    for(let i of record.data){
         appState.technicians.push(i);
     }
 }

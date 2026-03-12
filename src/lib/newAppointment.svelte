@@ -1,15 +1,13 @@
 <script>
-    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Phone} from "@lucide/svelte";
+    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Phone, Loader2} from "@lucide/svelte";
     import { addNotification, appState, newData, settings } from "../global.svelte";
     let focused = $state(-1);
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
     import TimePicker from "./timePicker.svelte";
-    import { loadTechnicians, pb } from "../api.svelte";
+    import { loadTechnicians, refreshData, sb } from "../api.svelte";
     import { slide } from "svelte/transition";
     import { onMount } from "svelte";
-
-    const debug = true;
 
     onMount(async () => {
         await loadTechnicians();
@@ -84,8 +82,10 @@
         return end - start;
     }
 
+    let creating = $state(false);
 
     const addAppointment = async () => {
+        creating = true;
         let duration = getDuration();
         if(duration < 0){
             addNotification('fail', 'You cannot set an appointment to end before it starts', 5000, HeartCrack)
@@ -93,7 +93,6 @@
         }
 
         let dateString = `${newData.year}-${(newData.month + 1) < 10 ? `0${(newData.month + 1)}` : (newData.month + 1)}-${newData.date < 10 ? `0${newData.date}` : newData.date} ${newData.startHours < 10 ? `0${newData.startHours}` : newData.startHours}:${newData.startMinutes < 10 ? `0${newData.startMinutes}` : newData.startMinutes}:00.123Z`;
-        console.log(dateString);
         let data = {
             "startTime": dateString,
             "duration": duration,
@@ -104,8 +103,10 @@
             "tech": newData.technician,
         }
 
+
         try {
-            const record = await pb.collection('appointments').create(data);
+            const { error } = await sb.from('appointments').insert(data);
+            await refreshData();
             const now = new Date();
             newData.clientName = "";
             newData.date = now.getDate();
@@ -118,8 +119,10 @@
             newData.endHours = 12;
             newData.endMinutes = 45;
             addNotification('success', 'Appointment created!', 5000, Check);
+            creating = false;
             replace('/')
         } catch {
+            creating = false;
             addNotification('fail', 'Something went wrong... Try again later', 5000, HeartCrack);
         }
     }
@@ -237,7 +240,16 @@
             </div>
 
 
-            <button class='nextButton' onclick={addAppointment}><PlusCircle size={20} /> Add Appointment</button>
+            <button class='nextButton' onclick={addAppointment}>
+                {#if creating}
+                    <div class="svgWrapper loading">
+                        <Loader2 size=20 />
+                    </div>
+                    Processing...
+                {:else}
+                    <PlusCircle size={20} /> Add Appointment
+                {/if}
+            </button>
         </div>
 
 </div>

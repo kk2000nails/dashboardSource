@@ -53,7 +53,7 @@
         <div class="row">
             <div class="text">
                 <p class='header'>Calendar Dots</p>
-            <p class='content'>Determines if notification dots show up on the main calendar view, representing if there are clients lined up for that dayd</p>
+            <p class='content'>Determines if notification dots show up on the main calendar view, representing if there are clients lined up for that day</p>
             </div>
 
             <label for='toggleDots' class="toggle {settings.animations ? "anims" : ""}" style='{settings.dotNotifications ? "background-color: var(--main-color);" : "background-color: var(--lighter-bg-color);"}'>

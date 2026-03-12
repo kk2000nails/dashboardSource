@@ -51,6 +51,7 @@ const collisionManager = (array) => {
     return output;
 }
 
+
 let appointments = $derived(collisionManager(appState.focusAppt.appt.toSorted(
     (a, b) => {
         return a.time < b.time ? -1 : a.time > b.time ? 1 : 0;
@@ -125,15 +126,7 @@ const getTime = (time) => {
     return output;
 }
 
-const to_bottom = () => {
-    let thing = document.getElementById('')
-    thing.scrollTop = thing.scrollHeight;
-}
-
 onMount(async () => {
-
-    await loadTechnicians();
-
     let first = 10000;
     for(let i of appointments){
         let time = (i.time / 1440) * 100;
@@ -144,12 +137,13 @@ onMount(async () => {
 
 })
 
+// generates the data to be placed in teh actual spreadsheet
 const generateData = (data) => {
     let output = [];
     for(let t of appState.technicians){
         let temp = [];
         for(let i = 0; i < 41; i++){
-            temp.push({size: 1, appt: null, start: i * 15});
+            temp.push({size: 1, appt: null,start: i * 15});
         }
         output.push({name: t.name, data: temp});
     }
@@ -157,7 +151,7 @@ const generateData = (data) => {
         for(let i of output){
             if(a.tech == i.name){
                 // get index
-                const index = (a.time - 570) / 15;
+                const index = Math.round((a.time - 570) / 15);
                 let duration = a.duration / 15;
                 i.data[index].appt = a;
                 i.data[index].size = duration;

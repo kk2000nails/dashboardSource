@@ -1,14 +1,13 @@
 <script>
     import { Check, HeartCrack, PlusCircle, Trash } from "@lucide/svelte";
     import { addNotification, appState, settings } from "../global.svelte";
-    import { slide } from "svelte/transition";
-    import { loadTechnicians, pb } from "../api.svelte";
+    import { loadTechnicians, refreshData, sb } from "../api.svelte";
     import { onMount } from "svelte";
 
     const deleteTech = async (tech) => {
-        console.log("deleting");
         try {
-            await pb.collection('technicians').delete(tech.id);
+            await sb.from('technicians').delete().eq('id', tech.id);
+            await loadTechnicians();
         } catch {
             addNotification('fail', "Something went wrong!", 5000, HeartCrack)
         }
@@ -16,7 +15,8 @@
 
     const addTech = async () => {
         try {
-            await pb.collection('technicians').create({name: newName});
+            await sb.from('technicians').insert({name: newName});
+            await loadTechnicians();
             addNotification("success", "Technician Added", 5000, Check)
             newName = "";
         } catch {

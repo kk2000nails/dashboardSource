@@ -1,12 +1,15 @@
 <script>
-    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Trash, Phone} from "@lucide/svelte";
+    import { ListTodo, User, Clock1, Clock10, Calendar, PlusCircle, Check, HeartCrack, Trash, Phone, Loader2} from "@lucide/svelte";
     import { addNotification, appointmentView, appState, settings } from "../global.svelte";
     import { replace } from 'svelte-spa-router';
     import CalendarPicker from "./calendarPicker.svelte";
     import TimePicker from "./timePicker.svelte";
-    import { loadTechnicians, pb, refreshData } from "../api.svelte";
+    import { loadTechnicians, refreshData, sb } from "../api.svelte";
     import { slide } from "svelte/transition";
     import { onMount } from "svelte";
+
+    let showLoader = $state(false);
+
 
     onMount(async () => {
         await loadTechnicians();
@@ -73,6 +76,7 @@
 
 
     const saveAppointment = async () => {
+        showLoader = true;
         let duration = getDuration();
         if(duration < 0){
             addNotification('fail', 'You cannot set an appointment to end before it starts', 5000, HeartCrack)
@@ -80,7 +84,6 @@
         }
 
         let dateString = `${appointmentView.year}-${(appointmentView.month + 1) < 10 ? `0${(appointmentView.month + 1)}` : (appointmentView.month + 1)}-${appointmentView.date < 10 ? `0${appointmentView.date}` : appointmentView.date} ${appointmentView.startHours < 10 ? `0${appointmentView.startHours}` : appointmentView.startHours}:${appointmentView.startMinutes < 10 ? `0${appointmentView.startMinutes}` : appointmentView.startMinutes}:00.123Z`;
-        console.log(dateString);
         let data = {
             "startTime": dateString,
             "duration": duration,
@@ -92,7 +95,8 @@
         }
 
         try {
-            const record = await pb.collection('appointments').update(appointmentView.id, data);
+            const error = await sb.from('appointments').update(data).eq('id', appointmentView.id);
+            await refreshData();
             const now = new Date();
             appointmentView.clientName = "";
             appointmentView.date = now.getDate();
@@ -101,15 +105,21 @@
             appointmentView.type = "";
             appointmentView.year = now.getFullYear();
             addNotification('success', 'Appointment Updated!', 5000, Check);
+            showLoader = false;
             replace('/')
         } catch {
+            showLoader = false;
             addNotification('fail', 'Something went wrong... Try again later', 5000, HeartCrack);
         }
     }
 
+    let deleting = $state(false);
     const deleteAppointment = async () => {
+        deleting = true;
         try {
-            const record = await pb.collection('appointments').delete(appointmentView.id);
+
+            console.log(appointmentView);
+            const { error } = await sb.from('appointments').delete().eq('id', appointmentView.id);
             const now = new Date();
             appointmentView.clientName = "";
             appointmentView.date = now.getDate();
@@ -119,11 +129,15 @@
             appointmentView.year = now.getFullYear();
             addNotification('success', 'Appointment Deleted!', 5000, Check);
             await refreshData();
+            deleting = false;
             replace('/')
         } catch {
+            deleting = false;
             addNotification('fail', 'Something went wrong... Try again later', 5000, HeartCrack);
         }
     }
+
+    let toggle = $state(false);
 
 </script>
 
@@ -206,20 +220,23 @@
                     <label for='focus4' class='focusLabel'>
                         <p>{appointmentView.tech}</p>
                     </label>
+                    <button id='focus4' onclick={() => {toggle = !toggle}} class='invis'>Bleh</button>
                 </div>
 
-                <label class="dropDown"
-                    transition:slide={{ duration: settings.animations ? 250 : 0 }}
-                >
-                    {#each appState.technicians as t, i}
-                        <label for='s{i}' class='item'>
-                            {t.name}
-                        </label>
-                        <button class='invis' id='s{i}' onclick={() => {appointmentView.tech = t.name;}}>Select Pack</button>
-                    {/each}
-                </label>
+                {#if toggle}
 
+                    <label class="dropDown"
+                        transition:slide={{ duration: settings.animations ? 250 : 0 }}
+                    >
+                        {#each appState.technicians as t, i}
+                            <label for='s{i}' class='item'>
+                                {t.name}
+                            </label>
+                            <button class='invis' id='s{i}' onclick={() => {appointmentView.tech = t.name;}}>Select Pack</button>
+                        {/each}
+                    </label>
 
+                {/if}
 
             </div>
 
@@ -232,11 +249,32 @@
                     <button class='nextButton' id="check" onclick={() => {checking = true; setTimeout(() => {checking = false;}, 5000)}}><Trash size={20} /> Delete</button>
 
                 {:else}
-                    <button class='nextButton' id="check" onclick={deleteAppointment}><Trash size={20} /> You sure?</button>
+                    <button class='nextButton' id="check" onclick={deleteAppointment}>
+                        {#if deleting}
+                            <div class="svgWrapper loading">
+                                <Loader2 size=20 />
+                            </div> 
+                            Processing...
+                        {:else}
+                            <Trash size={20} /> You sure?
+                        {/if}
+                    </button>
 
                 {/if}
 
-                <button class='nextButton' onclick={saveAppointment}><PlusCircle size={20} /> Save</button>
+                <button class='nextButton' onclick={saveAppointment}>
+
+                    {#if showLoader}
+                        <div class="svgWrapper loading">
+                            <Loader2 size=20 />
+                        </div> 
+                        Processing...
+                    {:else}
+                        <PlusCircle size={20} /> Save
+                    {/if}
+
+
+                </button>
             </div>
 
 

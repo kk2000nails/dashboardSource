@@ -1,5 +1,4 @@
 import { replace } from "svelte-spa-router";
-import AppointmentView from "./lib/appointmentView.svelte";
 
 export let appState = $state({
     sidebarToggle: false,
@@ -290,7 +289,6 @@ export const loadSettings = async () => {
     settings.notifications = data.notifications;
     settings.dotNotifications = data.dotNotifications;
     color.index = data.colorIndex;
-    console.log(data.colorIndex);
     loadTheme(themes[data.colorIndex], color.index);
 }
 
